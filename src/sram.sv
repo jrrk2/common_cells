@@ -29,17 +29,25 @@ module sram #(
     logic [DATA_WIDTH-1:0] ram [NUM_WORDS-1:0];
     logic [ADDR_WIDTH-1:0] raddr_q;
 
+    initial
+      begin:rst
+         for(int k=0; k<NUM_WORDS;k++)
+           ram[k] = '0;
+      end
+         
     // 1. randomize array
     // 2. randomize output when no request is active
-    always_ff @(posedge clk_i) begin
-        if (req_i) begin
-            if (!we_i)
+    always @(posedge clk_i)
+      begin
+         if (req_i)
+           begin
+              if (!we_i)
                 raddr_q <= addr_i;
-            else
-            for (int i = 0; i < DATA_WIDTH; i++)
-                if (be_i[i/8]) ram[addr_i][i] <= wdata_i[i];
-        end
-    end
+              else
+                for (int i = 0; i < DATA_WIDTH; i++)
+                  if (be_i[i/8]) ram[addr_i][i] <= wdata_i[i];
+           end
+      end
 
     assign rdata_o = ram[raddr_q];
 
